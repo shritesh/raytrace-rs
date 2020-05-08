@@ -1,22 +1,21 @@
+pub mod hit_record;
+pub mod hittable;
+pub mod hittable_list;
 pub mod ray;
+pub mod sphere;
 pub mod vec3;
 
+use hit_record::HitRecord;
+use hittable::Hittable;
+use hittable_list::HittableList;
 use image::ImageBuffer;
 use ray::Ray;
+use sphere::Sphere;
 use vec3::Vec3;
 
-fn hit_sphere(center: &Vec3, radius: f64, r: &Ray) -> bool {
-    let oc = r.origin - *center;
-    let a = r.direction.dot(&r.direction);
-    let b = 2.0 * oc.dot(&r.direction);
-    let c = oc.dot(&oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
-}
-
-pub fn ray_color(r: &Ray) -> Vec3 {
-    if hit_sphere(&Vec3(0.0, 0.0, -1.0), 0.5, r) {
-        Vec3(1.0, 0.0, 0.0)
+pub fn ray_color(r: &Ray, world: &dyn Hittable) -> Vec3 {
+    if let Some(hr) = world.hit(r, 0.0, f64::INFINITY) {
+        0.5 * (hr.normal + Vec3(1.0, 1.0, 1.0))
     } else {
         let unit_direction = r.direction.unit_vector();
         let t = 0.5 * (unit_direction.y() + 1.0);
@@ -31,8 +30,19 @@ pub fn main() {
 
     let origin = Vec3(0.0, 0.0, 0.0);
     let horizontal = Vec3(4.0, 0.0, 0.0);
-    let vertical = Vec3(0.0, 2.25, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3(0.0, 0.0, 1.0);
+    let vertical = Vec3(0.0, 2.0, 0.0);
+    let lower_left_corner = Vec3(-2.0, -1.0, -1.0);
+
+    let world = HittableList(vec![
+        &Sphere {
+            center: Vec3(0.0, 0.0, -1.0),
+            radius: 0.5,
+        },
+        &Sphere {
+            center: Vec3(0.0, -100.5, -1.0),
+            radius: 100.0,
+        },
+    ]);
 
     ImageBuffer::from_fn(image_width, image_height, |x, y| {
         let i = x;
@@ -46,7 +56,7 @@ pub fn main() {
             direction: lower_left_corner + u * horizontal + v * vertical,
         };
 
-        ray_color(&r).into_rgb()
+        ray_color(&r, &world).into_rgb()
     })
     .save("image.png")
     .unwrap();
