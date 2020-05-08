@@ -1,7 +1,10 @@
-use crate::{HitRecord, Hittable, Ray, Vec3};
+use crate::{HitRecord, Hittable, Material, Ray, Vec3};
+use std::rc::Rc;
+
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+    pub mat: Rc<dyn Material>,
 }
 
 impl Hittable for Sphere {
@@ -20,7 +23,13 @@ impl Hittable for Sphere {
                 if temp < t_max && temp > t_min {
                     let p = r.at(temp);
                     let outward_normal = (p - self.center) / self.radius;
-                    return Some(HitRecord::new(p, temp, r, &outward_normal));
+                    return Some(HitRecord::new(
+                        p,
+                        temp,
+                        self.mat.clone(),
+                        r,
+                        &outward_normal,
+                    ));
                 }
             }
         }

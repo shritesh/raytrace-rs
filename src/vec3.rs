@@ -89,6 +89,10 @@ impl Vec3 {
             -in_unit_sphere
         }
     }
+
+    pub fn reflect(&self, n: &Vec3) -> Vec3 {
+        *self - 2.0 * self.dot(n) * *n
+    }
 }
 
 impl Neg for Vec3 {

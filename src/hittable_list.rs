@@ -1,8 +1,8 @@
 use crate::{HitRecord, Hittable, Ray};
 
-pub struct HittableList<'t>(pub Vec<&'t dyn Hittable>);
+pub struct HittableList(pub Vec<Box<dyn Hittable>>);
 
-impl<'t> Hittable for HittableList<'t> {
+impl<'t> Hittable for HittableList {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut closest_so_far = t_max;
 
