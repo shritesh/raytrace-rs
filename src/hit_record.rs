@@ -6,6 +6,7 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub mat: Rc<dyn Material>,
     pub t: f64,
+    pub front_face: bool,
 }
 
 impl<'t> HitRecord {
@@ -22,6 +23,12 @@ impl<'t> HitRecord {
         } else {
             -*outward_normal
         };
-        HitRecord { p, normal, mat, t }
+        HitRecord {
+            p,
+            normal,
+            mat,
+            t,
+            front_face,
+        }
     }
 }

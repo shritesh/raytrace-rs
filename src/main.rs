@@ -13,7 +13,7 @@ use hit_record::HitRecord;
 use hittable::Hittable;
 use hittable_list::HittableList;
 use image::ImageBuffer;
-use materials::{Lambertian, Material, Metal};
+use materials::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
@@ -50,7 +50,7 @@ pub fn main() {
             center: Vec3(0.0, 0.0, -1.0),
             radius: 0.5,
             mat: Rc::new(Lambertian {
-                albedo: Vec3(0.7, 0.3, 0.3),
+                albedo: Vec3(0.1, 0.2, 0.5),
             }),
         }),
         Box::new(Sphere {
@@ -71,10 +71,12 @@ pub fn main() {
         Box::new(Sphere {
             center: Vec3(-1.0, 0.0, -1.0),
             radius: 0.5,
-            mat: Rc::new(Metal {
-                albedo: Vec3(0.8, 0.8, 0.8),
-                fuzz: 1.0,
-            }),
+            mat: Rc::new(Dielectric { ref_idx: 1.5 }),
+        }),
+        Box::new(Sphere {
+            center: Vec3(-1.0, 0.0, -1.0),
+            radius: -0.45,
+            mat: Rc::new(Dielectric { ref_idx: 1.5 }),
         }),
     ]);
 
