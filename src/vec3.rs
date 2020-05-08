@@ -1,5 +1,6 @@
 use image::Rgb;
 use std::ops::{Add, Div, Mul, Neg, Sub};
+#[derive(Copy, Clone)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
 impl Vec3 {
@@ -36,7 +37,7 @@ impl Vec3 {
     }
 
     pub fn unit_vector(&self) -> Vec3 {
-        self / self.length()
+        *self / self.length()
     }
 
     pub fn into_rgb(&self) -> Rgb<u8> {
@@ -48,7 +49,7 @@ impl Vec3 {
     }
 }
 
-impl Neg for &Vec3 {
+impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Self::Output {
@@ -56,36 +57,43 @@ impl Neg for &Vec3 {
     }
 }
 
-impl Add for &Vec3 {
+impl Add for Vec3 {
     type Output = Vec3;
 
-    fn add(self, rhs: &Vec3) -> Self::Output {
+    fn add(self, rhs: Vec3) -> Self::Output {
         Vec3(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2)
     }
 }
 
-impl Sub for &Vec3 {
+impl Sub for Vec3 {
     type Output = Vec3;
-    fn sub(self, rhs: &Vec3) -> Self::Output {
+    fn sub(self, rhs: Vec3) -> Self::Output {
         Vec3(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2)
     }
 }
 
-impl Mul for &Vec3 {
+impl Mul for Vec3 {
     type Output = Vec3;
-    fn mul(self, rhs: &Vec3) -> Self::Output {
+    fn mul(self, rhs: Vec3) -> Self::Output {
         Vec3(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
     }
 }
 
-impl Mul<f64> for &Vec3 {
+impl Mul<f64> for Vec3 {
     type Output = Vec3;
     fn mul(self, rhs: f64) -> Self::Output {
         Vec3(self.0 * rhs, self.1 * rhs, self.2 * rhs)
     }
 }
 
-impl Div<f64> for &Vec3 {
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl Div<f64> for Vec3 {
     type Output = Vec3;
     fn div(self, rhs: f64) -> Self::Output {
         Vec3(self.0 / rhs, self.1 / rhs, self.2 / rhs)
