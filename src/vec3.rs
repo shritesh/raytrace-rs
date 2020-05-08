@@ -1,5 +1,6 @@
+use crate::utilities::clamp;
 use image::Rgb;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 #[derive(Copy, Clone)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
@@ -40,11 +41,12 @@ impl Vec3 {
         *self / self.length()
     }
 
-    pub fn into_rgb(&self) -> Rgb<u8> {
+    pub fn into_rgb(&self, samples_per_pixel: i32) -> Rgb<u8> {
+        let scaled = *self / samples_per_pixel as f64;
         Rgb([
-            (self.0 * 255.999) as u8,
-            (self.1 * 255.999) as u8,
-            (self.2 * 255.999) as u8,
+            (clamp(scaled.0, 0.0, 0.999) * 256.0) as u8,
+            (clamp(scaled.1, 0.0, 0.999) * 256.0) as u8,
+            (clamp(scaled.2, 0.0, 0.999) * 256.0) as u8,
         ])
     }
 }
@@ -62,6 +64,12 @@ impl Add for Vec3 {
 
     fn add(self, rhs: Vec3) -> Self::Output {
         Vec3(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2)
+    }
+}
+
+impl AddAssign for Vec3 {
+    fn add_assign(&mut self, rhs: Vec3) {
+        *self = *self + rhs
     }
 }
 
