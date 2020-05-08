@@ -17,10 +17,10 @@ use materials::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
-use utilities::random_double;
+use utilities::{random_double, random_range};
 use vec3::Vec3;
 
-pub fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Vec3 {
+fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3(0.0, 0.0, 0.0);
     }
@@ -38,53 +38,91 @@ pub fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Vec3 {
     }
 }
 
+fn random_scene() -> HittableList {
+    let mut objects = Vec::<Box<dyn Hittable>>::new();
+
+    objects.push(Box::new(Sphere {
+        center: Vec3(0.0, -1000.0, 0.0),
+        radius: 1000.0,
+        mat: Rc::new(Lambertian {
+            albedo: Vec3(0.5, 0.5, 0.5),
+        }),
+    }));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = random_double();
+            let center = Vec3(
+                a as f64 + 0.9 * random_double(),
+                0.2,
+                b as f64 + 0.9 * random_double(),
+            );
+
+            if (center - Vec3(4.0, 0.2, 0.0)).length() > 0.9 {
+                let mat: Rc<dyn Material> = if choose_mat < 0.8 {
+                    // Diffuse
+                    Rc::new(Lambertian {
+                        albedo: Vec3::random() * Vec3::random(),
+                    })
+                } else if choose_mat < 0.95 {
+                    Rc::new(Metal {
+                        albedo: Vec3::random_in_range(0.5, 1.0),
+                        fuzz: random_range(0.0, 0.5),
+                    })
+                } else {
+                    // glass
+                    Rc::new(Dielectric { ref_idx: 1.5 })
+                };
+
+                objects.push(Box::new(Sphere {
+                    center,
+                    radius: 0.2,
+                    mat,
+                }))
+            }
+        }
+    }
+
+    objects.push(Box::new(Sphere {
+        center: Vec3(0.0, 1.0, 0.0),
+        radius: 1.0,
+        mat: Rc::new(Dielectric { ref_idx: 1.5 }),
+    }));
+
+    objects.push(Box::new(Sphere {
+        center: Vec3(-4.0, 1.0, 0.0),
+        radius: 1.0,
+        mat: Rc::new(Lambertian {
+            albedo: Vec3(0.4, 0.2, 0.1),
+        }),
+    }));
+
+    objects.push(Box::new(Sphere {
+        center: Vec3(4.0, 1.0, 0.0),
+        radius: 1.0,
+        mat: Rc::new(Metal {
+            albedo: Vec3(0.7, 0.6, 0.5),
+            fuzz: 0.0,
+        }),
+    }));
+
+    objects
+}
+
 pub fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 384;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
-    let max_depth = 100;
+    let max_depth = 50;
 
-    let world = HittableList(vec![
-        Box::new(Sphere {
-            center: Vec3(0.0, 0.0, -1.0),
-            radius: 0.5,
-            mat: Rc::new(Lambertian {
-                albedo: Vec3(0.1, 0.2, 0.5),
-            }),
-        }),
-        Box::new(Sphere {
-            center: Vec3(0.0, -100.5, -1.0),
-            radius: 100.0,
-            mat: Rc::new(Lambertian {
-                albedo: Vec3(0.8, 0.8, 0.0),
-            }),
-        }),
-        Box::new(Sphere {
-            center: Vec3(1.0, 0.0, -1.0),
-            radius: 0.5,
-            mat: Rc::new(Metal {
-                albedo: Vec3(0.8, 0.6, 0.2),
-                fuzz: 0.3,
-            }),
-        }),
-        Box::new(Sphere {
-            center: Vec3(-1.0, 0.0, -1.0),
-            radius: 0.5,
-            mat: Rc::new(Dielectric { ref_idx: 1.5 }),
-        }),
-        Box::new(Sphere {
-            center: Vec3(-1.0, 0.0, -1.0),
-            radius: -0.45,
-            mat: Rc::new(Dielectric { ref_idx: 1.5 }),
-        }),
-    ]);
+    let world = random_scene();
 
-    let lookfrom = Vec3(3.0, 3.0, 2.0);
-    let lookat = Vec3(0.0, 0.0, -1.0);
+    let lookfrom = Vec3(13.0, 2.0, 3.0);
+    let lookat = Vec3(0.0, 0.0, 0.0);
     let vup = Vec3(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom - lookat).length();
-    let aperture = 2.0;
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(
         lookfrom,
