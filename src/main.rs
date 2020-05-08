@@ -80,7 +80,13 @@ pub fn main() {
         }),
     ]);
 
-    let cam = Camera::new();
+    let cam = Camera::new(
+        Vec3(-2.0, 2.0, 1.0),
+        Vec3(0.0, 0.0, -1.0),
+        Vec3(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+    );
 
     ImageBuffer::from_fn(image_width, image_height, |x, y| {
         let i = x;
