@@ -13,14 +13,13 @@ use hit_record::HitRecord;
 use hittable::Hittable;
 use hittable_list::HittableList;
 use image::ImageBuffer;
-use materials::{Dielectric, Lambertian, Material, Metal};
+use materials::Material;
 use ray::Ray;
 use sphere::Sphere;
-use std::rc::Rc;
 use utilities::{random_double, random_range};
 use vec3::Vec3;
 
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Vec3 {
+fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3(0.0, 0.0, 0.0);
     }
@@ -39,15 +38,15 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Vec3 {
 }
 
 fn random_scene() -> HittableList {
-    let mut objects = Vec::<Box<dyn Hittable>>::new();
+    let mut objects = HittableList::new();
 
-    objects.push(Box::new(Sphere {
+    objects.push(Sphere {
         center: Vec3(0.0, -1000.0, 0.0),
         radius: 1000.0,
-        mat: Rc::new(Lambertian {
+        mat: Material::Lambertian {
             albedo: Vec3(0.5, 0.5, 0.5),
-        }),
-    }));
+        },
+    });
 
     for a in -11..11 {
         for b in -11..11 {
@@ -59,52 +58,53 @@ fn random_scene() -> HittableList {
             );
 
             if (center - Vec3(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mat: Rc<dyn Material> = if choose_mat < 0.8 {
+                let mat = if choose_mat < 0.8 {
                     // Diffuse
-                    Rc::new(Lambertian {
+                    Material::Lambertian {
                         albedo: Vec3::random() * Vec3::random(),
-                    })
+                    }
                 } else if choose_mat < 0.95 {
-                    Rc::new(Metal {
+                    // metal
+                    Material::Metal {
                         albedo: Vec3::random_in_range(0.5, 1.0),
                         fuzz: random_range(0.0, 0.5),
-                    })
+                    }
                 } else {
                     // glass
-                    Rc::new(Dielectric { ref_idx: 1.5 })
+                    Material::Dielectric { ref_idx: 1.5 }
                 };
 
-                objects.push(Box::new(Sphere {
+                objects.push(Sphere {
                     center,
                     radius: 0.2,
                     mat,
-                }))
+                })
             }
         }
     }
 
-    objects.push(Box::new(Sphere {
+    objects.push(Sphere {
         center: Vec3(0.0, 1.0, 0.0),
         radius: 1.0,
-        mat: Rc::new(Dielectric { ref_idx: 1.5 }),
-    }));
+        mat: Material::Dielectric { ref_idx: 1.5 },
+    });
 
-    objects.push(Box::new(Sphere {
+    objects.push(Sphere {
         center: Vec3(-4.0, 1.0, 0.0),
         radius: 1.0,
-        mat: Rc::new(Lambertian {
+        mat: Material::Lambertian {
             albedo: Vec3(0.4, 0.2, 0.1),
-        }),
-    }));
+        },
+    });
 
-    objects.push(Box::new(Sphere {
+    objects.push(Sphere {
         center: Vec3(4.0, 1.0, 0.0),
         radius: 1.0,
-        mat: Rc::new(Metal {
+        mat: Material::Metal {
             albedo: Vec3(0.7, 0.6, 0.5),
             fuzz: 0.0,
-        }),
-    }));
+        },
+    });
 
     objects
 }

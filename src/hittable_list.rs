@@ -1,6 +1,6 @@
-use crate::{HitRecord, Hittable, Ray};
+use crate::{HitRecord, Hittable, Ray, Sphere};
 
-pub type HittableList = Vec<Box<dyn Hittable>>;
+pub type HittableList = Vec<Sphere>;
 
 impl<'t> Hittable for HittableList {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
